@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام طلبات الخدمات - الإصدار النهائي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary-color: #10b981;
+            --secondary-dark: #059669;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --dark-bg: #1e293b;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: var(--text-primary);
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 20px 20px 0 0;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        header h1 {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 15px;
+            font-weight: 300;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-container {
+            background: var(--card-bg);
+            border-radius: 0 0 20px 20px;
+            padding: 25px;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .date-picker-section {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .date-picker-section label {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .date-picker-section input[type="date"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid var(--primary-light);
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .date-picker-section input[type="date"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .day-display {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            min-width: 100px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-color), var(--primary-light));
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .service-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .service-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+        }
+
+        .service-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .quantity-btn {
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .quantity-btn.minus {
+            background: linear-gradient(135deg, var(--danger-color), #dc2626);
+        }
+
+        .quantity-btn.plus {
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+        }
+
+        .quantity-btn:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.95);
+        }
+
+        .quantity-display {
+            min-width: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 6px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-light);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid var(--warning-color);
+            border-radius: 15px;
+            padding: 25px;
+            display: none;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--warning-color);
+        }
+
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .summary-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #92400e;
+        }
+
+        .summary-content {
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 12px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            border-right: 4px solid var(--primary-color);
+        }
+
+        .summary-item-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .summary-item-quantity {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            padding: 5px 15px;
+            border-radius: 8px;
+        }
+
+        .summary-total {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--secondary-color);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 18px;
+            border: 3px solid var(--secondary-color);
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+            color: white;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+            box-shadow: var(--shadow-md);
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+            color: white;
+            padding: 16px 28px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-xl);
+            font-weight: 700;
+            font-size: 15px;
+            opacity: 0;
+            transform: translateY(100px);
+            transition: all 0.4s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 35px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 1200px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 26px;
+            }
+
+            .main-container {
+                padding: 18px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .stat-card {
+                min-width: 100%;
+            }
+
+            .service-title {
+                font-size: 14px;
+            }
+
+            .quantity-display {
+                font-size: 20px;
+                min-width: 45px;
+            }
+
+            .quantity-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>🚗 نظام طلبات الخدمات</h1>
+            <p>اختر الخدمات التي تحتاجها بكل سهولة واحترافية</p>
+        </header>
+
+        <div class="main-container">
+            <!-- Date Picker Section -->
+            <div class="date-picker-section">
+                <label for="serviceDate">📅 تاريخ الطلب:</label>
+                <input type="date" id="serviceDate" onchange="updateDayName()">
+                <div class="day-display" id="dayName">اليوم</div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalServices">0</div>
+                    <div class="stat-label">إجمالي الطلبات</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeServices">0</div>
+                    <div class="stat-label">الخدمات المختارة</div>
+                </div>
+            </div>
+
+            <div class="services-grid" id="servicesGrid">
+                <!-- Battery Replacement Service -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🔋</div>
+                        <div class="service-title">تبديل بطارية</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('batteryReplace', -1)">−</button>
+                        <div class="quantity-display" id="batteryReplace">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('batteryReplace', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Battery Subscription Service -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">⚡</div>
+                        <div class="service-title">اشتراك بطارية</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('batterySubscribe', -1)">−</button>
+                        <div class="quantity-display" id="batterySubscribe">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('batterySubscribe', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Spare Tire Installation -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🛞</div>
+                        <div class="service-title">تركيب إطار احتياطي</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('spareTire', -1)">−</button>
+                        <div class="quantity-display" id="spareTire">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('spareTire', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Patch Service -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🔧</div>
+                        <div class="service-title">رقعة داخلية/خارجية</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('patch', -1)">−</button>
+                        <div class="quantity-display" id="patch">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('patch', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Tow Truck (Winch) -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🪝</div>
+                        <div class="service-title">ونش</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('towTruck', -1)">−</button>
+                        <div class="quantity-display" id="towTruck">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('towTruck', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Open Car -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🔑</div>
+                        <div class="service-title">فتح السيارة</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('openCar', -1)">−</button>
+                        <div class="quantity-display" id="openCar">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('openCar', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Gas -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">⛽</div>
+                        <div class="service-title">بنزين</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('gas', -1)">−</button>
+                        <div class="quantity-display" id="gas">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('gas', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Tire Service -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🛞</div>
+                        <div class="service-title">خدمة تواير</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('tires', -1)">−</button>
+                        <div class="quantity-display" id="tires">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('tires', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- AC Gas -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">❄️</div>
+                        <div class="service-title">تعبئة غاز مكيف</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('acGas', -1)">−</button>
+                        <div class="quantity-display" id="acGas">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('acGas', 1)">+</button>
+                    </div>
+                </div>
+
+                <!-- Car Wash -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🧼</div>
+                        <div class="service-title">غسيل السيارة</div>
+                    </div>
+                    <div class="quantity-control">
+                        <button class="quantity-btn minus" onclick="updateQuantity('carWash', -1)">−</button>
+                        <div class="quantity-display" id="carWash">0</div>
+                        <button class="quantity-btn plus" onclick="updateQuantity('carWash', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showTotal()">
+                    <span>📊 إظهار الملخص</span>
+                </button>
+                <button class="btn btn-secondary" onclick="resetAll()">
+                    <span>🔄 إعادة تعيين</span>
+                </button>
+            </div>
+
+            <div class="summary-section" id="summary">
+                <div class="summary-header">
+                    <div class="summary-icon">📋</div>
+                    <div class="summary-title">ملخص الطلبات</div>
+                </div>
+                <div class="summary-content" id="summaryContent"></div>
+                <div class="summary-total" id="summaryTotal"></div>
+                <button class="copy-btn" onclick="copySummary()">📄 نسخ الملخص</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const services = [
+            {name: 'تبديل بطارية', id: 'batteryReplace', icon: '🔋'},
+            {name: 'اشتراك بطارية', id: 'batterySubscribe', icon: '⚡'},
+            {name: 'تركيب إطار احتياطي', id: 'spareTire', icon: '🛞'},
+            {name: 'رقعة داخلية/خارجية', id: 'patch', icon: '🔧'},
+            {name: 'ونش', id: 'towTruck', icon: '🪝'},
+            {name: 'فتح السيارة', id: 'openCar', icon: '🔑'},
+            {name: 'بنزين', id: 'gas', icon: '⛽'},
+            {name: 'خدمة تواير', id: 'tires', icon: '🛞'},
+            {name: 'تعبئة غاز مكيف', id: 'acGas', icon: '❄️'},
+            {name: 'غسيل السيارة', id: 'carWash', icon: '🧼'}
+        ];
+
+        const dayNames = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+        function updateDayName() {
+            const dateInput = document.getElementById('serviceDate').value;
+            const dayNameElement = document.getElementById('dayName');
+            
+            if (dateInput) {
+                const date = new Date(dateInput);
+                const dayIndex = date.getDay();
+                dayNameElement.textContent = dayNames[dayIndex];
+            } else {
+                dayNameElement.textContent = 'اليوم';
+            }
+        }
+
+        function updateQuantity(serviceId, delta) {
+            const element = document.getElementById(serviceId);
+            let currentValue = parseInt(element.textContent);
+            currentValue += delta;
+            if (currentValue < 0) currentValue = 0;
+            element.textContent = currentValue;
+            updateStats();
+        }
+
+        function updateStats() {
+            let totalRequests = 0;
+            let activeServices = 0;
+
+            services.forEach(service => {
+                const quantity = parseInt(document.getElementById(service.id).textContent);
+                if (quantity > 0) {
+                    totalRequests += quantity;
+                    activeServices++;
+                }
+            });
+
+            document.getElementById('totalServices').textContent = totalRequests;
+            document.getElementById('activeServices').textContent = activeServices;
+        }
+
+        function showTotal() {
+            const selectedDate = document.getElementById('serviceDate').value;
+            const dayName = document.getElementById('dayName').textContent;
+            
+            let totalRequests = 0;
+            let summaryHTML = '';
+            let hasServices = false;
+
+            if (selectedDate) {
+                summaryHTML += `
+                    <div class="summary-item" style="background: #e0f2fe; border-right: 4px solid var(--primary-color);">
+                        <span class="summary-item-name">📅 تاريخ الطلب:</span>
+                        <span class="summary-item-quantity">${selectedDate} (${dayName})</span>
+                    </div>
+                `;
+            }
+
+            services.forEach(service => {
+                const quantity = parseInt(document.getElementById(service.id).textContent);
+                if (quantity > 0) {
+                    hasServices = true;
+                    summaryHTML += `
+                        <div class="summary-item">
+                            <span class="summary-item-name">${service.icon} ${service.name}</span>
+                            <span class="summary-item-quantity">${quantity} طلب</span>
+                        </div>
+                    `;
+                    totalRequests += quantity;
+                }
+            });
+
+            if (!hasServices) {
+                summaryHTML += `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">لم يتم اختيار أي خدمات بعد</div>
+                    </div>
+                `;
+                document.getElementById('summaryTotal').innerHTML = '';
+            } else {
+                document.getElementById('summaryTotal').innerHTML = `
+                    إجمالي الطلبات: <span style="font-size: 28px;">${totalRequests}</span> طلب
+                `;
+            }
+
+            document.getElementById('summaryContent').innerHTML = summaryHTML;
+            document.getElementById('summary').style.display = 'block';
+            
+            // Scroll to summary
+            document.getElementById('summary').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function copySummary() {
+            const selectedDate = document.getElementById('serviceDate').value;
+            const dayName = document.getElementById('dayName').textContent;
+            
+            let summaryText = '📋 ملخص الطلبات:\n\n';
+            let totalRequests = 0;
+            let hasServices = false;
+
+            if (selectedDate) {
+                summaryText += `📅 تاريخ الطلب: ${selectedDate} (${dayName})\n`;
+                summaryText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            }
+
+            services.forEach(service => {
+                const quantity = parseInt(document.getElementById(service.id).textContent);
+                if (quantity > 0) {
+                    hasServices = true;
+                    summaryText += `${service.icon} ${service.name}: ${quantity} طلب\n`;
+                    totalRequests += quantity;
+                }
+            });
+
+            if (!hasServices) {
+                showToast('⚠️ لم يتم اختيار أي خدمات للنسخ');
+                return;
+            }
+
+            summaryText += `\n━━━━━━━━━━━━━━━━━━━━\n`;
+            summaryText += `📊 إجمالي الطلبات: ${totalRequests} طلب`;
+
+            navigator.clipboard.writeText(summaryText).then(function() {
+                showToast('✅ تم نسخ الملخص بنجاح!');
+            }, function() {
+                showToast('❌ فشل النسخ، حاول مرة أخرى');
+            });
+        }
+
+        function resetAll() {
+            services.forEach(service => {
+                document.getElementById(service.id).textContent = '0';
+            });
+            document.getElementById('summary').style.display = 'none';
+            document.getElementById('serviceDate').value = '';
+            document.getElementById('dayName').textContent = 'اليوم';
+            updateStats();
+            showToast('🔄 تم إعادة تعيين جميع الخدمات');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize stats on page load
+        updateStats();
+    </script>
+</body>
+</html>
