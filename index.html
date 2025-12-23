@@ -441,15 +441,15 @@
     .wash-cards-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
+      margin-top: 8px;
     }
     
     .wash-card-compact {
       background: #262626;
       border: 1px solid #404040;
       border-radius: 4px;
-      padding: 10px;
+      padding: 8px;
       transition: all 0.2s ease;
     }
     
@@ -459,17 +459,17 @@
     }
     
     .wash-card-compact h3 {
-      font-size: 13px;
+      font-size: 12px;
       color: #F2BC1B;
-      margin: 0 0 6px 0;
+      margin: 0 0 5px 0;
       font-weight: 700;
     }
     
     .wash-card-compact .price {
-      font-size: 12px;
+      font-size: 11px;
       color: #fff;
       font-weight: 600;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     
     .wash-card-compact ul {
@@ -479,19 +479,22 @@
     }
     
     .wash-card-compact li {
-      font-size: 11px;
+      font-size: 10px;
       color: #999;
-      padding: 2px 0 2px 12px;
+      padding: 3px 0;
+      padding-right: 16px;
       position: relative;
+      line-height: 1.4;
     }
     
     .wash-card-compact li:before {
       content: "✓";
       position: absolute;
       right: 0;
+      top: 3px;
       color: #10b981;
       font-weight: bold;
-      font-size: 10px;
+      font-size: 11px;
     }
     
     /* Copy Button */
@@ -499,13 +502,13 @@
       background: #F2BC1B;
       color: #000;
       border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 11px;
+      border-radius: 3px;
+      padding: 3px 6px;
+      font-size: 10px;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      margin-top: 6px;
+      margin-top: 5px;
       transition: all 0.2s ease;
     }
     
@@ -877,8 +880,18 @@
               <button class="btn-option active" data-locked="no">لا</button>
               <button class="btn-option" data-locked="yes">نعم (+5 د.ك)</button>
             </div>
-            <div id="lockedNote" class="warning-box hidden">
-              <strong>⚠️ تنويه:</strong> إضافة 5 د.ك في حال القير ما يتبوش أو السيارة فيها حادث
+            <div id="lockedYesNote" class="warning-box hidden">
+              <strong>⚠️ تنويه:</strong> إذا القير ما يتبوش أو السيارة فيها حادث ما نقدر نشيلها بالونش المسكر
+            </div>
+            <div id="lockedNoNote" class="hidden" style="margin-top: 10px;">
+              <h3 class="section-title">هل القير يتبوش؟</h3>
+              <div class="btn-grid" style="grid-template-columns: 1fr 1fr;">
+                <button class="btn-option active" data-gear="yes">نعم</button>
+                <button class="btn-option" data-gear="no">لا (+10 د.ك عربانات)</button>
+              </div>
+              <div id="gearNote" class="warning-box hidden">
+                <strong>⚠️ ملاحظة:</strong> في حال انتظار المخفر: 5 د.ك لكل نصف ساعة | 10 د.ك لكل ساعة
+              </div>
             </div>
           </div>
         </div>
@@ -958,6 +971,7 @@
           const previousFrom = formData.from;
           const previousTo = formData.to;
           const previousLocked = formData.isLocked;
+          const previousGear = formData.gearWorks;
           
           // Hide sections temporarily
           document.getElementById('towTypeSection').classList.add('hidden');
@@ -965,7 +979,9 @@
           document.getElementById('towResultSection').classList.add('hidden');
           document.getElementById('flatbedNote').classList.add('hidden');
           document.getElementById('lockedOption').classList.add('hidden');
-          document.getElementById('lockedNote').classList.add('hidden');
+          document.getElementById('lockedYesNote').classList.add('hidden');
+          document.getElementById('lockedNoNote').classList.add('hidden');
+          document.getElementById('gearNote').classList.add('hidden');
           
           // Load new options for this company
           updateTowTypeOptions();
@@ -988,6 +1004,7 @@
                   formData.from = previousFrom;
                   formData.to = previousTo;
                   formData.isLocked = previousLocked;
+                  formData.gearWorks = previousGear;
                   
                   // Restore locked option if it was set
                   if (previousLocked && formData.towType === 'flatbed') {
@@ -1010,6 +1027,7 @@
       formData.companyArabic = 'بورتراج';
       formData.company = 'portarage towtruk';
       formData.isLocked = false;
+      formData.gearWorks = true;
       updateTowTypeOptions();
     }
 
@@ -1085,9 +1103,13 @@
               flatbedNote.classList.add('hidden');
               lockedOption.classList.remove('hidden');
               
-              // Initialize locked state
+              // Initialize states
               if (formData.isLocked === undefined) {
                 formData.isLocked = false;
+              }
+              
+              if (formData.gearWorks === undefined) {
+                formData.gearWorks = true;
               }
               
               // Setup locked buttons
@@ -1099,31 +1121,62 @@
                   
                   formData.isLocked = lockBtn.dataset.locked === 'yes';
                   
-                  const lockedNote = document.getElementById('lockedNote');
+                  const lockedYesNote = document.getElementById('lockedYesNote');
+                  const lockedNoNote = document.getElementById('lockedNoNote');
+                  
                   if (formData.isLocked) {
-                    lockedNote.classList.remove('hidden');
+                    lockedYesNote.classList.remove('hidden');
+                    lockedNoNote.classList.add('hidden');
+                    formData.gearWorks = true;
                   } else {
-                    lockedNote.classList.add('hidden');
+                    lockedYesNote.classList.add('hidden');
+                    lockedNoNote.classList.remove('hidden');
                   }
                   
-                  // Recalculate if locations are selected
                   if (formData.from && formData.to) {
                     calculateTowPrice();
                   }
                 };
               });
+              
+              // Setup gear buttons
+              const gearButtons = document.querySelectorAll('[data-gear]');
+              gearButtons.forEach(gearBtn => {
+                gearBtn.onclick = () => {
+                  gearButtons.forEach(b => b.classList.remove('active'));
+                  gearBtn.classList.add('active');
+                  
+                  formData.gearWorks = gearBtn.dataset.gear === 'yes';
+                  
+                  const gearNote = document.getElementById('gearNote');
+                  if (!formData.gearWorks) {
+                    gearNote.classList.remove('hidden');
+                  } else {
+                    gearNote.classList.add('hidden');
+                  }
+                  
+                  if (formData.from && formData.to) {
+                    calculateTowPrice();
+                  }
+                };
+              });
+              
             } else {
               // For other companies, show flatbed note and hide locked option
               flatbedNote.classList.remove('hidden');
               lockedOption.classList.add('hidden');
               formData.isLocked = false;
+              formData.gearWorks = true;
             }
             
           } else {
             flatbedNote.classList.add('hidden');
             lockedOption.classList.add('hidden');
-            document.getElementById('lockedNote').classList.add('hidden');
+            document.getElementById('lockedYesNote').classList.add('hidden');
+            document.getElementById('lockedNoNote').classList.add('hidden');
+            document.getElementById('gearNote').classList.add('hidden');
             formData.isLocked = false;
+            formData.gearWorks = true;
           }
           
           // Don't clear previous data - keep from/to if they exist
@@ -1291,8 +1344,16 @@
       
       let companyPrice = parseFloat(route.price) || 0;
       
-      // Add extra charges for normal tow (عربانات)
-      const extraCharges = (formData.company && formData.company.toLowerCase() === 'portarage towtruk' && formData.towType === 'normal' && formData.extraCharges === 'yes') ? 10 : 0;
+      // Add extra charges based on type
+      let extraCharges = 0;
+      
+      if (formData.towType === 'normal') {
+        // For normal tow: only for بورتراج with extraCharges = yes
+        extraCharges = (formData.company && formData.company.toLowerCase() === 'portarage towtruk' && formData.extraCharges === 'yes') ? 10 : 0;
+      } else if (formData.towType === 'flatbed' && formData.companyArabic === 'بورتراج' && !formData.isLocked) {
+        // For flatbed بورتراج when NOT locked: check gear
+        extraCharges = !formData.gearWorks ? 10 : 0;
+      }
       
       // Add locked charge for flatbed
       const lockedCharge = (formData.towType === 'flatbed' && formData.isLocked) ? 5 : 0;
@@ -1332,12 +1393,24 @@
           </tr>
         `;
         
-        if (lockedCharge > 0) {
+        if (lockedCharge > 0 || extraCharges > 0) {
+          if (lockedCharge > 0) {
+            rows += `
+              <tr>
+                <td>إضافة ونش مسكر</td>
+                <td class="highlight">${lockedCharge.toFixed(2)} ${config.currency}</td>
+              </tr>
+            `;
+          }
+          if (extraCharges > 0) {
+            rows += `
+              <tr>
+                <td>رسوم عربانات (القير لا يعمل)</td>
+                <td class="highlight">${extraCharges.toFixed(2)} ${config.currency}</td>
+              </tr>
+            `;
+          }
           rows += `
-            <tr>
-              <td>إضافة ونش مسكر</td>
-              <td class="highlight">${lockedCharge.toFixed(2)} ${config.currency}</td>
-            </tr>
             <tr style="background: #262626;">
               <td><strong>الإجمالي النهائي</strong></td>
               <td class="highlight"><strong>${finalPrice.toFixed(2)} ${config.currency}</strong></td>
@@ -1352,14 +1425,26 @@
           </tr>
         `;
         
-        // Show locked charge for flatbed
-        if (lockedCharge > 0) {
-          const total = companyPrice + lockedCharge;
+        // Show charges
+        if (lockedCharge > 0 || extraCharges > 0) {
+          if (lockedCharge > 0) {
+            rows += `
+              <tr>
+                <td>إضافة ونش مسكر</td>
+                <td class="highlight">${lockedCharge.toFixed(2)} ${config.currency}</td>
+              </tr>
+            `;
+          }
+          if (extraCharges > 0) {
+            rows += `
+              <tr>
+                <td>رسوم عربانات (القير لا يعمل)</td>
+                <td class="highlight">${extraCharges.toFixed(2)} ${config.currency}</td>
+              </tr>
+            `;
+          }
+          const total = companyPrice + lockedCharge + extraCharges;
           rows += `
-            <tr>
-              <td>إضافة ونش مسكر</td>
-              <td class="highlight">${lockedCharge.toFixed(2)} ${config.currency}</td>
-            </tr>
             <tr style="background: #262626;">
               <td><strong>الإجمالي</strong></td>
               <td class="highlight"><strong>${total.toFixed(2)} ${config.currency}</strong></td>
@@ -1367,28 +1452,13 @@
           `;
         }
         
-        // Show cancellation only for بورتراج
+        // Show cancellation
         const cancelPrice = getCancellationPrice(formData.from, formData.to, formData.towType);
         if (cancelPrice) {
           rows += `
             <tr>
               <td>رسوم الإلغاء</td>
               <td>${cancelPrice}</td>
-            </tr>
-          `;
-        }
-        
-        // Show extra charges for normal tow
-        if (extraCharges > 0) {
-          const finalTotal = companyPrice + extraCharges + lockedCharge;
-          rows += `
-            <tr>
-              <td>رسوم عربانات</td>
-              <td class="highlight">${extraCharges.toFixed(2)} ${config.currency}</td>
-            </tr>
-            <tr style="background: #262626;">
-              <td><strong>الإجمالي النهائي</strong></td>
-              <td class="highlight"><strong>${finalTotal.toFixed(2)} ${config.currency}</strong></td>
             </tr>
           `;
         }
@@ -1574,7 +1644,7 @@
             </table>
           </div>
           <div class="warning-box">
-            <strong>ملاحظة:</strong> لازم تشرحون للعميل انه رسوم الخدمه منفصلة عن سعر البنزين وانه يوصله لاقرب محطه فقط
+            <strong>ملاحظة:</strong> لازم تشرحون للعميل انه رسوم الخدمه منفصلة عن سعر البنزين وانكم يوصله لاقرب محطه فقط
           </div>
         </div>
       `;
@@ -1658,7 +1728,7 @@
             <datalist id="areaOptions"></datalist>
           </div>
           <div class="info-box">
-            <strong>📌 تنويه مهم:</strong><br>
+            <strong>⚠ تنويه مهم:</strong><br>
             • <strong>رقعة خارجية / سبير / تعبئة هواء:</strong> أي فني + باص التواير<br>
             • <strong>رقعة داخلية:</strong> فقط باص التواير
           </div>
@@ -1904,7 +1974,7 @@
           <div class="btn-grid" style="grid-template-columns: repeat(3, 1fr);">
             <button class="btn-option" data-mech="inspection">فحص السيارة</button>
             <button class="btn-option" data-mech="oil">زيت وفلتر</button>
-            <button class="btn-option" data-mech="brakes">سفايف وديسكات</button>
+            <button class="btn-option" data-mech="brakes">طفايف وديسكات</button>
           </div>
         </div>
         
@@ -2078,12 +2148,7 @@
         </div>
         
         <div id="washCardsSection" class="form-section full-width hidden">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 class="section-title" style="margin: 0;">تفاصيل الخدمات</h3>
-            <button id="toggleWashCards" style="background: #262626; border: 1px solid #F2BC1B; color: #F2BC1B; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 14px; font-weight: 600;">
-              ◀ إخفاء
-            </button>
-          </div>
+          <h3 class="section-title" style="margin-bottom: 10px;">تفاصيل الخدمات</h3>
           <div class="wash-cards-grid" id="washCardsGrid">
           </div>
         </div>
@@ -2154,8 +2219,8 @@
             <h3>${wash.name}</h3>
             <div class="price">صالون: ${wash.priceSedan} د.ك | جيب: ${wash.priceSUV} د.ك</div>
             <div style="font-size: 11px; color: #10b981; margin-bottom: 6px;">⏱ ${wash.duration}</div>
-            <ul class="service-details-list">
-              ${wash.services.slice(0, 4).map(s => `<li>${s}</li>`).join('')}
+            <ul>
+              ${wash.services.map(s => `<li>${s}</li>`).join('')}
             </ul>
             <button class="copy-btn-small" onclick="copyWashDetails('${type}')">📋 نسخ</button>
           </div>
@@ -2164,23 +2229,6 @@
       
       formData.selectedWashes = washTypes;
       washCardsSection.classList.remove('hidden');
-      
-      // Toggle service details visibility (only hide ul lists, keep price and title)
-      const toggleBtn = document.getElementById('toggleWashCards');
-      let detailsVisible = true;
-      
-      toggleBtn.onclick = () => {
-        detailsVisible = !detailsVisible;
-        const serviceLists = document.querySelectorAll('.service-details-list');
-        
-        if (detailsVisible) {
-          serviceLists.forEach(list => list.style.display = 'block');
-          toggleBtn.innerHTML = '◀ إخفاء';
-        } else {
-          serviceLists.forEach(list => list.style.display = 'none');
-          toggleBtn.innerHTML = '▶ إظهار';
-        }
-      };
       
       document.getElementById('appointmentSection').classList.remove('hidden');
       
@@ -2670,5 +2718,5 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
     // Initial load
     loadAllSheets();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b28fb16015051ca',t:'MTc2NjUwNDY3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b295eec229651ca',t:'MTc2NjUwODc2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
