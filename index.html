@@ -655,10 +655,10 @@
       'بورتراج': 'portarage towtruk',
       'هيرو وركس': 'hero.works',
       'أحمد الغانم': 'Ahmed Al-Ghanem',
-      'بيكوك كونسيرج': 'Peacock Concierge',
-      'بروجكت إكس ريسنق': 'ProjX Racing',
-      'ياماها موتور': 'Yamaha Motor',
-      'فولت قاراج': 'Vault Garage',
+      'بيكوك': 'Peacock Concierge',
+      'ProjX Racing': 'ProjX Racing',
+      'ياماها': 'Yamaha Motor',
+      'فولت قراج': 'Vault Garage',
       'جيلي': 'Geely',
       'اوتو كابيتال': 'Auto Capital'
     };
@@ -806,7 +806,7 @@
         <div class="form-section">
           <h3 class="section-title">اختيار الجهة</h3>
           <div class="btn-grid" style="grid-template-columns: 1fr;">
-            <button class="btn-option active" data-company="بورتر��ج">بورتراج</button>
+            <button class="btn-option active" data-company="بورتراج">بورتراج</button>
           </div>
           <button id="toggleCompanies" class="btn-option" style="width: 100%; margin-top: 8px; background: #353535; border-color: #666;">
             ⬇️ إظهار الشركات الأخرى
@@ -848,7 +848,7 @@
           </div>
           
           <div id="flatbedExtraChargesSection" class="hidden" style="margin-top: 10px;">
-            <h3 class="section-title">رسوم إض��فية</h3>
+            <h3 class="section-title">رسوم إضافية</h3>
             <div class="form-field">
               <label>هل القير ما يتبوش أو السيارة فيها حادث؟</label>
               <select id="flatbedExtraChargesSelect" class="form-control">
@@ -1660,7 +1660,7 @@
           </div>
           <div class="info-box">
             <strong>⚠️ تنبيه مهم:</strong><br>
-            • <strong>رقعة خارجية / سبير / تعبئة هواء:</strong> أي فني + باص ��لتواير<br>
+            • <strong>رقعة خارجية / سبير / تعبئة هواء:</strong> أي فني + باص التواير<br>
             • <strong>رقعة داخلية:</strong> فقط باص التواير
           </div>
         </div>
@@ -1708,7 +1708,7 @@
         
         if (row[8] === formData.area) {
           internalPrice = row[9] ? `${parseFloat(row[9]).toFixed(2)} ${config.currency}` : 'غير متوفر';
-          internalCancel = row[10] ? `${parseFloat(row[10]).toFixed(2)} ${config.currency}` : 'غير مح��د';
+          internalCancel = row[10] ? `${parseFloat(row[10]).toFixed(2)} ${config.currency}` : 'غير محدد';
         } else if (row[12] === formData.area) {
           internalPrice = row[13] ? `${parseFloat(row[13]).toFixed(2)} ${config.currency}` : 'غير متوفر';
           internalCancel = row[14] ? `${parseFloat(row[14]).toFixed(2)} ${config.currency}` : 'غير محدد';
@@ -1833,7 +1833,7 @@
         const tbody = document.getElementById('balanceResultBody');
         tbody.innerHTML = `
           <tr>
-            <td>سعر ��لخدمة</td>
+            <td>سعر الخدمة</td>
             <td class="highlight">${basePrice.toFixed(2)} ${config.currency}</td>
           </tr>
           <tr>
@@ -2121,10 +2121,10 @@
           duration: '1 ساعة',
           priceSedan: 7,
           priceSUV: 8,
-          services: ['غسيل خارجي', 'تنظيف داخلي', 'تلميع التواير والرنقات', 'تنظيف فتحات التكييف', '��طر']
+          services: ['غسيل خارجي', 'تنظيف داخلي', 'تلميع التواير والرنقات', 'تنظيف فتحات التكييف', 'عطر']
         },
         special: {
-          name: '��� غسيل خصوصي',
+          name: '💎 غسيل خصوصي',
           duration: 'ساعتين',
           priceSedan: 15,
           priceSUV: 17,
@@ -2195,7 +2195,7 @@
         },
         ultra: {
           name: 'غسيل ألترا',
-          duration: '3 س��عات',
+          duration: '3 ساعات',
           priceSedan: 30,
           priceSUV: 35,
           services: ['غسيل خارجي', 'التنظيف الداخلي', 'تلميع ديكورات السيارة الداخلية', 'غسيل مقاعد السيارة', 'تنظيف الأبواب', 'غسيل دبة السيارة', 'تنظيف لوحة القيادة']
@@ -2450,7 +2450,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           const period = hours >= 12 ? 'مساءً' : 'صباحاً';
           const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
           const time = `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
-          html += `<div style="font-size: 11px; color: #10b981; margin: 3px 0;">💎 غسيل خصوصي: ابتداءً م�� ${time}</div>`;
+          html += `<div style="font-size: 11px; color: #10b981; margin: 3px 0;">💎 غسيل خصوصي: ابتداءً من  ${time}</div>`;
         }
         
         if (availableWashes.ultra) {
@@ -2460,7 +2460,7 @@ ${wash.services.map(s => `• ${s}`).join('\n')}
           const period = hours >= 12 ? 'مساءً' : 'صباحاً';
           const displayHours = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
           const time = `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
-          html += `<div style="font-size: 11px; color: #10b981; margin: 3px 0;">��� غسيل ألترا: ابتداءً من ${time}</div>`;
+          html += `<div style="font-size: 11px; color: #10b981; margin: 3px 0;">👑 غسيل ألترا: ابتداءً من ${time}</div>`;
         }
         
         html += `</div>`;
