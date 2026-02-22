@@ -3,7 +3,7 @@
  <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام البحث عن بطاريات السيارات</title>
+  <title> البحث عن بطاريات السيارات</title>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -612,74 +612,6 @@
             color: #000;
         }
 
-        .notice-box {
-            background: linear-gradient(135deg, #d32f2f 0%, #f44336 100%);
-            border: 2px solid #b71c1c;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1rem;
-            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
-            color: white;
-        }
-
-        .notice-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.8rem;
-            gap: 0.8rem;
-        }
-
-        .notice-title {
-            font-size: 0.95rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .toggle-notice-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid white;
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.75rem;
-            white-space: nowrap;
-        }
-
-        .toggle-notice-btn:hover {
-            background: white;
-            color: #d32f2f;
-            transform: translateY(-2px);
-        }
-
-        .notice-content {
-            line-height: 1.8;
-            font-size: 0.85rem;
-        }
-
-        .notice-content.hidden {
-            display: none;
-        }
-
-        .notice-item {
-            padding: 0.4rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .notice-item:last-child {
-            border-bottom: none;
-        }
-
-        .notice-item strong {
-            color: #FFD54F;
-            font-size: 0.9rem;
-        }
-
         .dashboard-section {
             display: none;
             margin-bottom: 2rem;
@@ -1133,6 +1065,38 @@
         const BATTERY_SHEET_URL = `https://docs.google.com/spreadsheets/d/${BATTERY_SHEET_ID}/export?format=csv&gid=0`;
         const GOOGLE_SHEET_VIEW_URL = `https://docs.google.com/spreadsheets/d/${BATTERY_SHEET_ID}/edit`;
 
+        const CACHE_TTL_MS = 5 * 60 * 1000;
+        const CACHE_KEYS = {
+            car: 'batterySystem_car_csv',
+            battery: 'batterySystem_battery_csv',
+            carTs: 'batterySystem_car_csv_ts',
+            batteryTs: 'batterySystem_battery_csv_ts'
+        };
+
+        function getCachedCSV(cacheKey, tsKey) {
+            const ts = parseInt(localStorage.getItem(tsKey) || '0', 10);
+            if (!ts || (Date.now() - ts) > CACHE_TTL_MS) return null;
+            return localStorage.getItem(cacheKey);
+        }
+
+        function setCachedCSV(cacheKey, tsKey, text) {
+            try {
+                localStorage.setItem(cacheKey, text);
+                localStorage.setItem(tsKey, Date.now().toString());
+            } catch (e) {
+                // تجاهل أخطاء التخزين المحلي
+            }
+        }
+
+        async function fetchCSVWithCache(url, cacheKey, tsKey) {
+            const cached = getCachedCSV(cacheKey, tsKey);
+            if (cached) return cached;
+            const response = await fetch(url, { cache: 'no-store' });
+            const text = await response.text();
+            setCachedCSV(cacheKey, tsKey, text);
+            return text;
+        }
+
         const USERS = {
             Abdullah: { password: 'portarage1', role: 'كول سنتر', isStaff: true },
             Suaad: { password: 'portarage2', role: 'كول سنتر', isStaff: true },
@@ -1142,10 +1106,8 @@
             Azam: { password: 'portarage6', role: 'كول سنتر', isStaff: true },
             Abdulwahab: { password: 'portarage7', role: 'كول سنتر', isStaff: true },
             Bashar: { password: 'portarage8', role: 'كول سنتر', isStaff: true },
-            YOUSEF: { password: 'Barcelona', role: 'كول سنتر', isStaff: true },
             Ali: { password: 'portarage9', role: 'كول سنتر', isStaff: true },
-            Sabah: { password: '96695014', role: 'كول سنتر', isStaff: true },
-            Sarah: { password: '90084122sa', role: 'كول سنتر', isStaff: true },
+            Sabah: { password: 'portarage10', role: 'كول سنتر', isStaff: true },
             Hamad: { password: 'portarage12', role: 'كول سنتر', isStaff: true },
             Fawzi: { password: 'portarage12', role: 'كول سنتر', isStaff: true },
             Mohamad: { password: 'portarage7896', role: 'المحاسب', isStaff: false },
@@ -1334,8 +1296,7 @@
 
         async function loadCarData() {
             try {
-                const response = await fetch(CAR_SHEET_URL);
-                const text = await response.text();
+                const text = await fetchCSVWithCache(CAR_SHEET_URL, CACHE_KEYS.car, CACHE_KEYS.carTs);
                 const rows = text.split('\n').filter(row => row.trim());
                 
                 carData = [];
@@ -1362,10 +1323,10 @@
         async function loadDriversData() {
             try {
                 const predefinedNames = {
-                    'NYAZ': 'نياز',
+                    'NYAZ-DATARAM': 'نياز وداترام',
                     'Muthu': 'موتو',
                     'Ganesh': 'جانيش',
-                    'Iresh-KESAVAN': 'اريش-كيسافان',
+                    'Iresh-Sanidu': 'اريش-سانديو',
                     'GUFRAN': 'غفران',
                     'edeson alpert': 'إيديسون ألبرت',
                     'Irfan': 'عرفان',
@@ -1376,8 +1337,8 @@
                     'MortaDA/Santhosh': 'مرتضى / سانتوش',
                     'Mayura': 'مايورا',
                     'yusuf & rahimah allah': 'يوسف و رحمة الله',
-                    'Ali and Sayed': 'علي وسيد',
-                    'Sayid and Ramos': 'سيد ورامو',
+                    'ali and Mohammed': 'علي ومحمد',
+                    'Sayid and Ramos': 'سيد و رامز',
                     'bala': 'بالا',
                     'Durga Prasad': 'دورجا براساد'
                 };
@@ -1390,8 +1351,7 @@
 
         async function loadBatteryData() {
             try {
-                const response = await fetch(BATTERY_SHEET_URL);
-                const text = await response.text();
+                const text = await fetchCSVWithCache(BATTERY_SHEET_URL, CACHE_KEYS.battery, CACHE_KEYS.batteryTs);
                 const rows = text.split('\n').filter(row => row.trim());
                 
                 const headers = parseCSVLine(rows[0]);
@@ -1884,18 +1844,6 @@
             }
         }
 
-        function toggleNotice(button) {
-            const noticeContent = button.closest('.notice-box').querySelector('.notice-content');
-            
-            if (noticeContent.classList.contains('hidden')) {
-                noticeContent.classList.remove('hidden');
-                button.textContent = '🔼 إخفاء';
-            } else {
-                noticeContent.classList.add('hidden');
-                button.textContent = '🔽 إظهار';
-            }
-        }
-
         function generatePricesTable(allBatteries) {
             const showPurchasePrice = currentUser && !currentUser.isStaff;
             const showCopyButton = currentUser && currentUser.isStaff;
@@ -1982,25 +1930,6 @@
                         }).join('')}
                     </tbody>
                 </table>
-                <div class="notice-box">
-                    <div class="notice-header">
-                        <div class="notice-title">
-                            ⚠️ ملاحظة مهمة - رسوم إضافية
-                        </div>
-                        <button class="toggle-notice-btn" onclick="toggleNotice(this)">🔼 إخفاء</button>
-                    </div>
-                    <div class="notice-content">
-                        <div class="notice-item">
-                            <strong>💵 زيادة 15 د.ك:</strong> إذا البطارية تحت الكشن
-                        </div>
-                        <div class="notice-item">
-                            <strong>💵 زيادة 10 د.ك:</strong> علي صباح السالم (أم الهيمان)، شعيبة، ميناء عبدالله، جليعة، بنيدر، الخيران، النويصيب، الروضتين، العبدلي، الصبية، جبد، صباح الأحمد، الوفره
-                        </div>
-                        <div class="notice-item">
-                            <strong>💵 زيادة 5 د.ك:</strong> جابر الأحمد، سعد العبدالله، الجهراء، فحيحيل، الأحمدي، غرب عبدالله مبارك
-                        </div>
-                    </div>
-                </div>
             `;
         }
 
@@ -2290,5 +2219,5 @@
             }
         });
     </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b5ffaae15c47cc9',t:'MTc2NzA4MTM3Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b079058e22351ca',t:'MTc2NjE1NDI2OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
