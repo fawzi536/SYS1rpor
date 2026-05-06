@@ -1230,8 +1230,10 @@
             
             if (brandUpper.includes('VARTA')) {
                 return 'مورد فارتا';
+            } else if (brandUpper.includes('HANKOOK')) {
+                return 'مورد فارتا';
             } else if (brandUpper.includes('EMTRAC')) {
-                return 'مورد البحبطين';
+                return 'مورد البابطين';
             } else {
                 return type === 'FK' ? 'مورد اف كي' : 'مورد افتخار';
             }
